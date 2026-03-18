@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tela 1 - Buscar por carro</title>
+    <link rel="stylesheet" href="tela1-busca-carro.css" />
+  </head>
+  <body>
+    <main class="screen">
+      <header class="topbar">
+        <h1>Buscar por carro</h1>
+        <div class="search-row">
+          <input id="searchInput" type="text" placeholder="Digite nome, placa ou status" />
+          <button id="searchBtn">PESQUISAR</button>
+        </div>
+      </header>
+
+      <section class="card">
+        <h2>AutoPrime Veículos</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome do Carro</th>
+              <th>Placa do carro</th>
+              <th>Data da compra</th>
+              <th>Status do Pagamento</th>
+            </tr>
+          </thead>
+          <tbody id="carsTable"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="tela1-busca-carro.js"></script>
+  </body>
+</html>

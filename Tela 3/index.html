@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tela 3 - Clientes</title>
+    <link rel="stylesheet" href="tela3-clientes.css" />
+  </head>
+  <body>
+    <main class="screen">
+      <header class="actions">
+        <button id="selectBtn">Selecionar Cliente</button>
+        <input id="selectedName" type="text" readonly value="Gabriel Marques Figueira" />
+        <button id="addBtn">Adicionar Cliente</button>
+        <button id="removeBtn">Remover Cliente</button>
+      </header>
+
+      <section class="card">
+        <h2>AutoPrime Veículos</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome da Pessoa</th>
+              <th>CPF</th>
+              <th>Profissão</th>
+            </tr>
+          </thead>
+          <tbody id="clientsBody"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="tela3-clientes.js"></script>
+  </body>
+</html>

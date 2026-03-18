@@ -1,0 +1,11 @@
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:#050505;color:#f3f3f3}
+.screen{max-width:1100px;margin:0 auto;padding:16px}
+h1{margin:0;font-size:44px} p{margin:6px 0 16px;font-size:28px;font-weight:700}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #af9440;padding:12px;vertical-align:middle}
+th{background:#0a0a0a}
+img{width:220px;height:120px;object-fit:cover;border-radius:4px}
+.price{font-weight:800;color:#ffe082;text-align:center}
+ul{margin:0;padding-left:18px}
+li{margin-bottom:8px}
