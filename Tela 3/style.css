@@ -1,12 +1,59 @@
-*{box-sizing:border-box;font-family:Arial,sans-serif}
-body{margin:0;background:#050505;color:#efefef}
-.screen{max-width:1100px;margin:0 auto;padding:16px}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
-button,input{padding:12px;border:none;border-radius:999px;font-size:24px;font-weight:700}
-button{background:#f4d53f;cursor:pointer}
-input{background:#f4d53f;text-align:center}
-.card{border:2px solid #9333ea}
-h2{margin:0;padding:12px;background:#f4d53f;color:#101010}
-table{width:100%;border-collapse:collapse}
-th,td{border:1px solid #3b3b3b;padding:12px;text-align:left}
-tr.selected{background:#201038}
+.topbar {
+  display: grid;
+  gap: 10px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.98rem;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.actions input {
+  text-align: center;
+  font-weight: 800;
+}
+
+.danger-btn {
+  background: #b4232e;
+  color: #fff0f0;
+}
+
+.danger-btn:hover {
+  background: #9c1d27;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+#clientsBody tr {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#clientsBody tr:hover {
+  background: color-mix(in oklab, #ffffff 8%, transparent);
+}
+
+#clientsBody tr.selected {
+  background: color-mix(in oklab, #3d2e7a 55%, transparent);
+}
+
+.no-results {
+  text-align: center;
+  color: var(--fg-muted);
+  font-style: italic;
+}
+
+@media (max-width: 760px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
+}

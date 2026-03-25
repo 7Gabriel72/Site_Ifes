@@ -1,18 +1,39 @@
-:root { --bg:#050505; --fg:#f2f2f2; --yellow:#f4d53f; --muted:#232323; }
-*{box-sizing:border-box;font-family:Arial,sans-serif}
-body{margin:0;background:var(--bg);color:var(--fg)}
-.screen{max-width:1100px;margin:0 auto;padding:16px}
-.topbar h1{margin:0 0 12px;font-size:32px}
-.search-row{display:flex;gap:12px}
-input,button{border:none;border-radius:999px;padding:12px 18px}
-input{flex:1;background:var(--yellow);font-weight:700}
-button{background:var(--yellow);font-weight:800;cursor:pointer}
-.card{border:1px solid #5a5a5a;margin-top:16px}
-.card h2{margin:0;padding:12px;background:var(--yellow);color:#111}
-table{width:100%;border-collapse:collapse}
-th,td{border:1px solid #3a3a3a;padding:12px;text-align:left}
-th{background:#0b0b0b}
-.status{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px}
-.completed{background:#0a3f20;color:#87f5a8}
-.blocked{background:#451515;color:#ff8b8b}
-.consorcio{background:#2d2d2d;color:#d7d7d7}
+/* Tela 1 - Specific styles */
+
+.topbar {
+  display: grid;
+  gap: 10px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.98rem;
+}
+
+.result-count {
+  margin: 2px 0 0;
+  min-height: 1.2em;
+  color: #d8e2f0;
+  font-size: 0.92rem;
+}
+
+.ghost-btn {
+  background: transparent;
+  color: var(--fg-primary);
+  border: 1px solid var(--border-muted);
+}
+
+.ghost-btn:hover {
+  background: color-mix(in oklab, var(--bg-secondary) 75%, white 8%);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.no-results {
+  text-align: center;
+  color: var(--fg-muted);
+  font-style: italic;
+}
