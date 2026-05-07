@@ -1,0 +1,234 @@
+/* Define que padding e border entrem no cálculo do tamanho do elemento. */
+* {
+  box-sizing: border-box;
+}
+
+/* Define a aparência geral do corpo da página. */
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f3f6fb;
+  color: #1f2937;
+}
+
+/* Estiliza o cabeçalho superior. */
+.topo {
+  background: linear-gradient(135deg, #1e3a8a, #38bdf8);
+  color: white;
+  padding: 32px 18px;
+  text-align: center;
+}
+
+/* Estiliza o título do cabeçalho. */
+.topo h1 {
+  margin: 0;
+  font-size: 36px;
+}
+
+/* Estiliza o subtítulo do cabeçalho. */
+.topo p {
+  margin: 8px 0 0;
+  font-size: 16px;
+}
+
+/* Estiliza o menu de navegação. */
+.menu {
+  background: white;
+  border-bottom: 1px solid #dbe3ef;
+  padding: 14px;
+  text-align: center;
+}
+
+/* Estiliza os links do menu. */
+.menu a {
+  color: #1e40af;
+  font-weight: bold;
+  margin: 0 10px;
+  text-decoration: none;
+}
+
+/* Adiciona sublinhado quando o mouse passa sobre o link. */
+.menu a:hover {
+  text-decoration: underline;
+}
+
+/* Define a largura máxima da área principal. */
+.container {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+/* Estiliza os cartões brancos. */
+.card {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  margin-bottom: 20px;
+  padding: 24px;
+}
+
+/* Adiciona uma borda azul ao cartão de destaque. */
+.destaque {
+  border-left: 6px solid #1e40af;
+}
+
+/* Organiza os cartões em colunas. */
+.grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Organiza os campos do formulário em coluna. */
+.formulario {
+  display: grid;
+  gap: 10px;
+}
+
+/* Organiza campo de busca e botão lado a lado. */
+.formulario-dupla {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+}
+
+/* Deixa os rótulos do formulário em negrito. */
+.formulario label {
+  font-weight: bold;
+}
+
+/* Estiliza inputs e selects. */
+.formulario input,
+.formulario select,
+.formulario-dupla input {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 15px;
+  padding: 11px;
+}
+
+/* Estiliza botões e links com aparência de botão. */
+button,
+.botao {
+  background: #1e40af;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  display: inline-block;
+  font-weight: bold;
+  padding: 10px 16px;
+  text-decoration: none;
+}
+
+/* Muda a cor do botão quando passa o mouse. */
+button:hover,
+.botao:hover {
+  background: #172554;
+}
+
+/* Estiliza o botão de editar. */
+.botao-editar {
+  background: #0f766e;
+  margin-right: 6px;
+}
+
+/* Muda a cor do botão editar ao passar o mouse. */
+.botao-editar:hover {
+  background: #134e4a;
+}
+
+/* Estiliza o botão de deletar. */
+.botao-deletar {
+  background: #b91c1c;
+}
+
+/* Muda a cor do botão deletar ao passar o mouse. */
+.botao-deletar:hover {
+  background: #7f1d1d;
+}
+
+/* Dá espaçamento para a área de resultado. */
+.resultado {
+  margin-top: 16px;
+}
+
+/* Estiliza cada item listado. */
+.item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 5px solid #38bdf8;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  padding: 12px;
+}
+
+/* Dá espaçamento para os botões dentro dos itens. */
+.item-acoes {
+  margin-top: 10px;
+}
+
+/* Estiliza mensagens de retorno. */
+.mensagem {
+  font-weight: bold;
+  min-height: 20px;
+}
+
+/* Define cor de mensagem de sucesso. */
+.sucesso {
+  color: #15803d;
+}
+
+/* Define cor de mensagem de erro. */
+.erro {
+  color: #b91c1c;
+}
+
+/* Estiliza blocos de código e retorno JSON. */
+pre {
+  background: #0f172a;
+  border-radius: 12px;
+  color: #e5e7eb;
+  overflow: auto;
+  padding: 16px;
+  white-space: pre-wrap;
+}
+
+/* Estiliza trechos curtos de código. */
+code {
+  background: #e0f2fe;
+  border-radius: 6px;
+  padding: 3px 6px;
+}
+
+/* Estiliza o rodapé. */
+.rodape {
+  color: #64748b;
+  padding: 18px;
+  text-align: center;
+}
+
+/* Ajusta o layout em telas médias. */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .formulario-dupla {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ajusta o layout em telas pequenas. */
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .menu a {
+    display: block;
+    margin: 8px 0;
+  }
+}

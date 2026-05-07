@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carros</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Carros</h1>
+    <p>Cadastrar, buscar, editar e deletar veiculos</p>
+  </header>
+
+  <nav class="menu">
+    <a href="index.html">Inicio</a>
+    <a class="ativo" href="carros.html">Carros</a>
+    <a href="clientes.html">Clientes</a>
+    <a href="seguros.html">Seguros</a>
+    <a href="vendas.html">Vendas</a>
+    <a href="testes-api.html">Testes da API</a>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <h2 id="tituloFormulario">Cadastrar carro</h2>
+
+      <form id="formCarro" class="formulario">
+        <input id="carroId" type="hidden">
+
+        <div class="form-grid">
+          <div class="campo">
+            <label for="modelo">Modelo</label>
+            <input id="modelo" required minlength="3" placeholder="Ex: Toyota Corolla XEi">
+          </div>
+
+          <div class="campo">
+            <label for="marca">Marca</label>
+            <input id="marca" required placeholder="Ex: Toyota">
+          </div>
+
+          <div class="campo">
+            <label for="placa">Placa</label>
+            <input id="placa" required placeholder="ABC-1D23">
+          </div>
+
+          <div class="campo">
+            <label for="dataCompra">Data da compra</label>
+            <input id="dataCompra" type="date" required>
+          </div>
+
+          <div class="campo">
+            <label for="statusPagamento">Status do pagamento</label>
+            <select id="statusPagamento" required>
+              <option>Pago</option>
+              <option>Atrasado</option>
+              <option>Consorcio</option>
+              <option>Pendente</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="ano">Ano</label>
+            <input id="ano" type="number" required min="1980" max="2027" placeholder="2026">
+          </div>
+
+          <div class="campo">
+            <label for="preco">Preco</label>
+            <input id="preco" type="number" required min="1" step="0.01" placeholder="85900">
+          </div>
+
+          <div class="campo">
+            <label for="combustivel">Combustivel</label>
+            <input id="combustivel" placeholder="Flex">
+          </div>
+
+          <div class="campo">
+            <label for="cambio">Cambio</label>
+            <input id="cambio" placeholder="Automatico">
+          </div>
+
+          <div class="campo">
+            <label for="quilometragem">Quilometragem</label>
+            <input id="quilometragem" placeholder="15.200 km">
+          </div>
+        </div>
+
+        <div class="item-acoes">
+          <button type="submit">Salvar carro</button>
+          <button id="cancelarEdicao" class="botao-secundario" type="button">Cancelar edicao</button>
+        </div>
+      </form>
+
+      <p id="mensagem" class="mensagem"></p>
+    </section>
+
+    <section class="card">
+      <h2>Buscar carro</h2>
+      <div class="formulario-dupla">
+        <input id="busca" placeholder="Digite modelo, marca, placa ou status">
+        <button id="buscarBtn" type="button">Buscar</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Lista de carros</h2>
+      <div id="listaCarros" class="resultado"></div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Projeto didatico - AutoPrime Veiculos</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    const formCarro = document.getElementById("formCarro");
+    const listaCarros = document.getElementById("listaCarros");
+    const buscaInput = document.getElementById("busca");
+
+    function dadosDoFormulario() {
+      return {
+        modelo: document.getElementById("modelo").value,
+        marca: document.getElementById("marca").value,
+        placa: document.getElementById("placa").value,
+        dataCompra: document.getElementById("dataCompra").value,
+        statusPagamento: document.getElementById("statusPagamento").value,
+        ano: Number(document.getElementById("ano").value),
+        preco: Number(document.getElementById("preco").value),
+        combustivel: document.getElementById("combustivel").value,
+        cambio: document.getElementById("cambio").value,
+        quilometragem: document.getElementById("quilometragem").value
+      };
+    }
+
+    function limparFormulario() {
+      formCarro.reset();
+      document.getElementById("carroId").value = "";
+      document.getElementById("tituloFormulario").textContent = "Cadastrar carro";
+    }
+
+    function preencherFormulario(carro) {
+      document.getElementById("carroId").value = carro.id;
+      document.getElementById("modelo").value = carro.modelo;
+      document.getElementById("marca").value = carro.marca;
+      document.getElementById("placa").value = carro.placa;
+      document.getElementById("dataCompra").value = carro.dataCompra;
+      document.getElementById("statusPagamento").value = carro.statusPagamento;
+      document.getElementById("ano").value = carro.ano;
+      document.getElementById("preco").value = carro.preco;
+      document.getElementById("combustivel").value = carro.combustivel;
+      document.getElementById("cambio").value = carro.cambio;
+      document.getElementById("quilometragem").value = carro.quilometragem;
+      document.getElementById("tituloFormulario").textContent = "Editar carro";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function carregarCarros() {
+      const busca = buscaInput.value.trim();
+      const url = busca ? "/carros?q=" + encodeURIComponent(busca) : "/carros";
+
+      try {
+        const carros = await buscarJSON(url);
+
+        if (!carros.length) {
+          listaCarros.innerHTML = "<p>Nenhum carro encontrado.</p>";
+          return;
+        }
+
+        listaCarros.innerHTML = carros
+          .map((carro) => `
+            <article class="item">
+              <div class="item-cabecalho">
+                <strong>${escaparHTML(carro.modelo)}</strong>
+                <span class="badge ${classeStatus(carro.statusPagamento)}">${escaparHTML(carro.statusPagamento)}</span>
+              </div>
+              <div class="item-meta">
+                <span>Marca: ${escaparHTML(carro.marca)} | Placa: ${escaparHTML(carro.placa)}</span>
+                <span>Ano: ${carro.ano} | Compra: ${formatarData(carro.dataCompra)} | Preco: ${formatarDinheiro(carro.preco)}</span>
+                <span>${escaparHTML(carro.combustivel || "-")} | ${escaparHTML(carro.cambio || "-")} | ${escaparHTML(carro.quilometragem || "-")}</span>
+                <small>ID: ${carro.id}</small>
+              </div>
+              <div class="item-acoes">
+                <button class="botao-editar" data-acao="editar" data-id="${carro.id}" type="button">Editar</button>
+                <button class="botao-deletar" data-acao="deletar" data-id="${carro.id}" type="button">Deletar</button>
+              </div>
+            </article>
+          `)
+          .join("");
+      } catch (erro) {
+        listaCarros.innerHTML = `<p class="erro">${escaparHTML(erro.message)}</p>`;
+      }
+    }
+
+    formCarro.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+
+      const id = document.getElementById("carroId").value;
+      const editando = Boolean(id);
+      const url = editando ? `/carros/${id}` : "/carros";
+      const method = editando ? "PUT" : "POST";
+
+      try {
+        await buscarJSON(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dadosDoFormulario())
+        });
+
+        mostrarMensagem("mensagem", editando ? "Carro editado com sucesso!" : "Carro cadastrado com sucesso!", "sucesso");
+        limparFormulario();
+        carregarCarros();
+      } catch (erro) {
+        mostrarMensagem("mensagem", erro.message, "erro");
+      }
+    });
+
+    listaCarros.addEventListener("click", async (evento) => {
+      const botao = evento.target.closest("button[data-acao]");
+
+      if (!botao) return;
+
+      const id = Number(botao.dataset.id);
+
+      if (botao.dataset.acao === "editar") {
+        const carro = await buscarJSON(`/carros/${id}`);
+        preencherFormulario(carro);
+        return;
+      }
+
+      if (!confirm("Deseja realmente deletar este carro?")) return;
+
+      try {
+        const resposta = await fetch(`/carros/${id}`, { method: "DELETE" });
+
+        if (!resposta.ok) {
+          const dados = await resposta.json();
+          throw new Error(dados.erro);
+        }
+
+        mostrarMensagem("mensagem", "Carro deletado com sucesso!", "sucesso");
+        carregarCarros();
+      } catch (erro) {
+        mostrarMensagem("mensagem", erro.message, "erro");
+      }
+    });
+
+    document.getElementById("cancelarEdicao").addEventListener("click", limparFormulario);
+    document.getElementById("buscarBtn").addEventListener("click", carregarCarros);
+    buscaInput.addEventListener("keydown", (evento) => {
+      if (evento.key === "Enter") carregarCarros();
+    });
+
+    carregarCarros();
+  </script>
+</body>
+</html>

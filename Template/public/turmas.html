@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Turmas</title><link rel="stylesheet" href="css/style.css"></head>
+<body>
+<header class="topo"><h1>Turmas</h1><p>Cadastrar, buscar, editar e deletar turmas</p></header>
+
+  <!-- Menu de navegação entre as páginas do sistema. -->
+  <nav class="menu">
+    <a href="index.html">Início</a>
+    <a href="alunos.html">Alunos</a>
+    <a href="cursos.html">Cursos</a>
+    <a href="turmas.html">Turmas</a>
+    <a href="matriculas.html">Matrículas</a>
+    <a href="testes-api.html">Testes da API</a>
+  </nav>
+
+<main class="container">
+<section class="card"><h2 id="tituloFormulario">Cadastrar turma</h2><form id="formTurma" class="formulario"><input id="turmaId" type="hidden"><label>Semestre</label><input id="semestre" required><label>Letra</label><input id="letra" required><label>Curso</label><select id="curso_id" required></select><button type="submit">Salvar turma</button><button type="button" onclick="limparFormulario()">Cancelar edição</button></form><p id="mensagem" class="mensagem"></p></section>
+<section class="card"><h2>Buscar turma</h2><div class="formulario-dupla"><input id="busca" placeholder="Digite semestre, letra ou curso"><button onclick="carregarTurmas()">Buscar</button></div></section>
+<section class="card"><h2>Lista de turmas</h2><div id="listaTurmas" class="resultado"></div></section>
+</main>
+<footer class="rodape"><p>Projeto didático - Secretaria Escolar</p></footer>
+<script src="js/api.js"></script>
+<script>
+// Seleciona o formulário de turmas.
+const formTurma = document.getElementById("formTurma");
+
+// Carrega os cursos dentro do select.
+async function carregarCursosSelect() {
+  const select = document.getElementById("curso_id");
+  const cursos = await buscarJSON("/cursos");
+  select.innerHTML = '<option value="">Selecione um curso</option>';
+  cursos.forEach((curso) => {
+    const option = document.createElement("option");
+    option.value = curso.id;
+    option.textContent = `${curso.titulo} (${curso.codigo})`;
+    select.appendChild(option);
+  });
+}
+
+// Envia dados do formulário para cadastrar ou editar turma.
+formTurma.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+  const id = document.getElementById("turmaId").value;
+  const semestre = document.getElementById("semestre").value;
+  const letra = document.getElementById("letra").value;
+  const curso_id = Number(document.getElementById("curso_id").value);
+  const editando = Boolean(id);
+  const url = editando ? `/turmas/${id}` : "/turmas";
+  const method = editando ? "PUT" : "POST";
+  try {
+    await buscarJSON(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ semestre, letra, curso_id }) });
+    mostrarMensagem("mensagem", editando ? "Turma editada com sucesso!" : "Turma cadastrada com sucesso!", "sucesso");
+    limparFormulario();
+    carregarTurmas();
+  } catch (erro) {
+    mostrarMensagem("mensagem", erro.message, "erro");
+  }
+});
+
+// Preenche o formulário para editar.
+function editarTurma(id, semestre, letra, curso_id) {
+  document.getElementById("turmaId").value = id;
+  document.getElementById("semestre").value = semestre;
+  document.getElementById("letra").value = letra;
+  document.getElementById("curso_id").value = curso_id;
+  document.getElementById("tituloFormulario").textContent = "Editar turma";
+}
+
+// Limpa o formulário.
+function limparFormulario() {
+  formTurma.reset();
+  document.getElementById("turmaId").value = "";
+  document.getElementById("tituloFormulario").textContent = "Cadastrar turma";
+}
+
+// Deleta turma.
+async function deletarTurma(id) {
+  if (!confirm("Deseja realmente deletar esta turma?")) return;
+  try {
+    const resposta = await fetch(`/turmas/${id}`, { method: "DELETE" });
+    if (!resposta.ok) {
+      const dados = await resposta.json();
+      throw new Error(dados.erro);
+    }
+    mostrarMensagem("mensagem", "Turma deletada com sucesso!", "sucesso");
+    carregarTurmas();
+  } catch (erro) {
+    mostrarMensagem("mensagem", erro.message, "erro");
+  }
+}
+
+// Carrega turmas na tela.
+async function carregarTurmas() {
+  const busca = document.getElementById("busca").value;
+  const url = busca ? "/turmas?q=" + encodeURIComponent(busca) : "/turmas";
+  const lista = document.getElementById("listaTurmas");
+  try {
+    const turmas = await buscarJSON(url);
+    lista.innerHTML = "";
+    turmas.forEach((turma) => {
+      const item = document.createElement("div");
+      item.className = "item";
+      item.innerHTML = `<strong>Turma ${turma.letra}</strong><br><span>Semestre: ${turma.semestre}</span><br><span>Curso: ${turma.curso}</span><br><small>ID: ${turma.id}</small><div class="item-acoes"><button class="botao-editar" onclick="editarTurma(${turma.id}, '${turma.semestre}', '${turma.letra}', ${turma.curso_id})">Editar</button><button class="botao-deletar" onclick="deletarTurma(${turma.id})">Deletar</button></div>`;
+      lista.appendChild(item);
+    });
+  } catch (erro) {
+    lista.innerHTML = `<p class="erro">${erro.message}</p>`;
+  }
+}
+
+// Inicia os dados da tela.
+carregarCursosSelect();
+carregarTurmas();
+</script>
+</body>
+</html>

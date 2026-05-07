@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendas</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Vendas</h1>
+    <p>Registrar venda vinculando cliente, carro e seguro</p>
+  </header>
+
+  <nav class="menu">
+    <a href="index.html">Inicio</a>
+    <a href="carros.html">Carros</a>
+    <a href="clientes.html">Clientes</a>
+    <a href="seguros.html">Seguros</a>
+    <a class="ativo" href="vendas.html">Vendas</a>
+    <a href="testes-api.html">Testes da API</a>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <h2 id="tituloFormulario">Cadastrar venda</h2>
+
+      <form id="formVenda" class="formulario">
+        <input id="vendaId" type="hidden">
+
+        <div class="form-grid">
+          <div class="campo">
+            <label for="cliente_id">Cliente</label>
+            <select id="cliente_id" required></select>
+          </div>
+
+          <div class="campo">
+            <label for="carro_id">Carro</label>
+            <select id="carro_id" required></select>
+          </div>
+
+          <div class="campo">
+            <label for="seguro_id">Seguro</label>
+            <select id="seguro_id"></select>
+          </div>
+
+          <div class="campo">
+            <label for="dataVenda">Data da venda</label>
+            <input id="dataVenda" type="date" required>
+          </div>
+
+          <div class="campo">
+            <label for="statusPagamento">Status do pagamento</label>
+            <select id="statusPagamento" required>
+              <option>Pago</option>
+              <option>Atrasado</option>
+              <option>Consorcio</option>
+              <option>Pendente</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="item-acoes">
+          <button type="submit">Salvar venda</button>
+          <button id="cancelarEdicao" class="botao-secundario" type="button">Cancelar edicao</button>
+        </div>
+      </form>
+
+      <p id="mensagem" class="mensagem"></p>
+    </section>
+
+    <section class="card">
+      <h2>Buscar venda</h2>
+      <div class="formulario-dupla">
+        <input id="busca" placeholder="Digite cliente, carro, placa, seguro ou status">
+        <button id="buscarBtn" type="button">Buscar</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Lista de vendas</h2>
+      <div id="listaVendas" class="resultado"></div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Projeto didatico - AutoPrime Veiculos</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    const formVenda = document.getElementById("formVenda");
+    const listaVendas = document.getElementById("listaVendas");
+    const buscaInput = document.getElementById("busca");
+
+    function criarOpcao(valor, texto) {
+      const option = document.createElement("option");
+      option.value = valor;
+      option.textContent = texto;
+      return option;
+    }
+
+    async function carregarOpcoes() {
+      const [clientes, carros, seguros] = await Promise.all([
+        buscarJSON("/clientes"),
+        buscarJSON("/carros"),
+        buscarJSON("/seguros")
+      ]);
+
+      const selectCliente = document.getElementById("cliente_id");
+      const selectCarro = document.getElementById("carro_id");
+      const selectSeguro = document.getElementById("seguro_id");
+
+      selectCliente.innerHTML = "";
+      selectCarro.innerHTML = "";
+      selectSeguro.innerHTML = "";
+
+      selectCliente.appendChild(criarOpcao("", "Selecione um cliente"));
+      selectCarro.appendChild(criarOpcao("", "Selecione um carro"));
+      selectSeguro.appendChild(criarOpcao("", "Sem seguro"));
+
+      clientes.forEach((cliente) => {
+        selectCliente.appendChild(criarOpcao(cliente.id, `${cliente.nome} (${cliente.cpf})`));
+      });
+
+      carros.forEach((carro) => {
+        selectCarro.appendChild(criarOpcao(carro.id, `${carro.modelo} - ${carro.placa}`));
+      });
+
+      seguros.forEach((seguro) => {
+        selectSeguro.appendChild(criarOpcao(seguro.id, `${seguro.seguradora} - ${formatarDinheiro(seguro.precoMensal)}`));
+      });
+    }
+
+    function dadosDoFormulario() {
+      const seguroId = document.getElementById("seguro_id").value;
+
+      return {
+        cliente_id: Number(document.getElementById("cliente_id").value),
+        carro_id: Number(document.getElementById("carro_id").value),
+        seguro_id: seguroId ? Number(seguroId) : null,
+        dataVenda: document.getElementById("dataVenda").value,
+        statusPagamento: document.getElementById("statusPagamento").value
+      };
+    }
+
+    function limparFormulario() {
+      formVenda.reset();
+      document.getElementById("vendaId").value = "";
+      document.getElementById("tituloFormulario").textContent = "Cadastrar venda";
+    }
+
+    function preencherFormulario(venda) {
+      document.getElementById("vendaId").value = venda.id;
+      document.getElementById("cliente_id").value = venda.cliente_id;
+      document.getElementById("carro_id").value = venda.carro_id;
+      document.getElementById("seguro_id").value = venda.seguro_id || "";
+      document.getElementById("dataVenda").value = venda.dataVenda;
+      document.getElementById("statusPagamento").value = venda.statusPagamento;
+      document.getElementById("tituloFormulario").textContent = "Editar venda";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function carregarVendas() {
+      const busca = buscaInput.value.trim();
+      const url = busca ? "/vendas?q=" + encodeURIComponent(busca) : "/vendas";
+
+      try {
+        const vendas = await buscarJSON(url);
+
+        if (!vendas.length) {
+          listaVendas.innerHTML = "<p>Nenhuma venda encontrada.</p>";
+          return;
+        }
+
+        listaVendas.innerHTML = vendas
+          .map((venda) => `
+            <article class="item">
+              <div class="item-cabecalho">
+                <strong>${escaparHTML(venda.cliente)}</strong>
+                <span class="badge ${classeStatus(venda.statusPagamento)}">${escaparHTML(venda.statusPagamento)}</span>
+              </div>
+              <div class="item-meta">
+                <span>Carro: ${escaparHTML(venda.carro)} | Placa: ${escaparHTML(venda.placa)}</span>
+                <span>Seguro: ${escaparHTML(venda.seguro)} | Data: ${formatarData(venda.dataVenda)}</span>
+                <span>Valor do carro: ${formatarDinheiro(venda.precoCarro)}</span>
+                <small>ID: ${venda.id}</small>
+              </div>
+              <div class="item-acoes">
+                <button class="botao-editar" data-acao="editar" data-id="${venda.id}" type="button">Editar</button>
+                <button class="botao-deletar" data-acao="deletar" data-id="${venda.id}" type="button">Deletar</button>
+              </div>
+            </article>
+          `)
+          .join("");
+      } catch (erro) {
+        listaVendas.innerHTML = `<p class="erro">${escaparHTML(erro.message)}</p>`;
+      }
+    }
+
+    formVenda.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+
+      const id = document.getElementById("vendaId").value;
+      const editando = Boolean(id);
+      const url = editando ? `/vendas/${id}` : "/vendas";
+      const method = editando ? "PUT" : "POST";
+
+      try {
+        await buscarJSON(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dadosDoFormulario())
+        });
+
+        mostrarMensagem("mensagem", editando ? "Venda editada com sucesso!" : "Venda cadastrada com sucesso!", "sucesso");
+        limparFormulario();
+        await carregarVendas();
+      } catch (erro) {
+        mostrarMensagem("mensagem", erro.message, "erro");
+      }
+    });
+
+    listaVendas.addEventListener("click", async (evento) => {
+      const botao = evento.target.closest("button[data-acao]");
+
+      if (!botao) return;
+
+      const id = Number(botao.dataset.id);
+
+      if (botao.dataset.acao === "editar") {
+        const venda = await buscarJSON(`/vendas/${id}`);
+        preencherFormulario(venda);
+        return;
+      }
+
+      if (!confirm("Deseja realmente deletar esta venda?")) return;
+
+      try {
+        const resposta = await fetch(`/vendas/${id}`, { method: "DELETE" });
+
+        if (!resposta.ok) {
+          const dados = await resposta.json();
+          throw new Error(dados.erro);
+        }
+
+        mostrarMensagem("mensagem", "Venda deletada com sucesso!", "sucesso");
+        carregarVendas();
+      } catch (erro) {
+        mostrarMensagem("mensagem", erro.message, "erro");
+      }
+    });
+
+    document.getElementById("cancelarEdicao").addEventListener("click", limparFormulario);
+    document.getElementById("buscarBtn").addEventListener("click", carregarVendas);
+    buscaInput.addEventListener("keydown", (evento) => {
+      if (evento.key === "Enter") carregarVendas();
+    });
+
+    async function iniciar() {
+      await carregarOpcoes();
+      await carregarVendas();
+    }
+
+    iniciar();
+  </script>
+</body>
+</html>

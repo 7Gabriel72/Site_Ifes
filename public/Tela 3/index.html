@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tela 3 - Clientes</title>
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="screen">
+      <nav class="main-nav" aria-label="Navegacao de telas">
+        <a class="nav-link" href="../Tela 1/Index.html">Tela 1</a>
+        <a class="nav-link" href="../Tela2/index.html">Tela 2</a>
+        <a class="nav-link is-active" aria-current="page" href="./index.html">Tela 3</a>
+        <a class="nav-link" href="../Tela 4/index.html">Tela 4</a>
+      </nav>
+
+      <header class="topbar">
+        <h1>Gestao de Clientes</h1>
+        <p class="subtitle">Selecione, adicione ou remova clientes da lista.</p>
+
+        <div class="actions">
+          <button id="selectBtn" type="button">SELECIONAR CLIENTE</button>
+          <input id="selectedName" type="text" readonly />
+          <button id="addBtn" type="button">ADICIONAR CLIENTE</button>
+          <button id="removeBtn" class="danger-btn" type="button">REMOVER CLIENTE</button>
+        </div>
+      </header>
+
+      <section class="card">
+        <h2>AutoPrime Veiculos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome da Pessoa</th>
+                <th>CPF</th>
+                <th>Profissao</th>
+              </tr>
+            </thead>
+            <tbody id="clientsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "autoprime-veiculos",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Servidor Node para o sistema AutoPrime Veiculos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

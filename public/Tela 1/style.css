@@ -1,0 +1,39 @@
+/* Tela 1 - Specific styles */
+
+.topbar {
+  display: grid;
+  gap: 10px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.98rem;
+}
+
+.result-count {
+  margin: 2px 0 0;
+  min-height: 1.2em;
+  color: #d8e2f0;
+  font-size: 0.92rem;
+}
+
+.ghost-btn {
+  background: transparent;
+  color: var(--fg-primary);
+  border: 1px solid var(--border-muted);
+}
+
+.ghost-btn:hover {
+  background: color-mix(in oklab, var(--bg-secondary) 75%, white 8%);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.no-results {
+  text-align: center;
+  color: var(--fg-muted);
+  font-style: italic;
+}

@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seguros</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Seguros</h1>
+    <p>Cadastrar, buscar, editar e deletar planos de seguro</p>
+  </header>
+
+  <nav class="menu">
+    <a href="index.html">Inicio</a>
+    <a href="carros.html">Carros</a>
+    <a href="clientes.html">Clientes</a>
+    <a class="ativo" href="seguros.html">Seguros</a>
+    <a href="vendas.html">Vendas</a>
+    <a href="testes-api.html">Testes da API</a>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <h2 id="tituloFormulario">Cadastrar seguro</h2>
+
+      <form id="formSeguro" class="formulario">
+        <input id="seguroId" type="hidden">
+
+        <div class="form-grid">
+          <div class="campo">
+            <label for="seguradora">Seguradora</label>
+            <input id="seguradora" required placeholder="Porto Seguro">
+          </div>
+
+          <div class="campo">
+            <label for="precoMensal">Preco mensal</label>
+            <input id="precoMensal" type="number" required min="1" step="0.01" placeholder="289.90">
+          </div>
+
+          <div class="campo">
+            <label for="protecoes">Protecoes</label>
+            <textarea id="protecoes" required placeholder="Colisao, Roubo e Furto, Assistencia 24h"></textarea>
+          </div>
+        </div>
+
+        <div class="item-acoes">
+          <button type="submit">Salvar seguro</button>
+          <button id="cancelarEdicao" class="botao-secundario" type="button">Cancelar edicao</button>
+        </div>
+      </form>
+
+      <p id="mensagem" class="mensagem"></p>
+    </section>
+
+    <section class="card">
+      <h2>Buscar seguro</h2>
+      <div class="formulario-dupla">
+        <input id="busca" placeholder="Digite seguradora ou protecao">
+        <button id="buscarBtn" type="button">Buscar</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Lista de seguros</h2>
+      <div id="listaSeguros" class="resultado"></div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Projeto didatico - AutoPrime Veiculos</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    const formSeguro = document.getElementById("formSeguro");
+    const listaSeguros = document.getElementById("listaSeguros");
+    const buscaInput = document.getElementById("busca");
+
+    function lerProtecoes() {
+      return document.getElementById("protecoes").value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    function dadosDoFormulario() {
+      return {
+        seguradora: document.getElementById("seguradora").value,
+        protecoes: lerProtecoes(),
+        precoMensal: Number(document.getElementById("precoMensal").value)
+      };
+    }
+
+    function limparFormulario() {
+      formSeguro.reset();
+      document.getElementById("seguroId").value = "";
+      document.getElementById("tituloFormulario").textContent = "Cadastrar seguro";
+    }
+
+    function preencherFormulario(seguro) {
+      document.getElementById("seguroId").value = seguro.id;
+      document.getElementById("seguradora").value = seguro.seguradora;
+      document.getElementById("precoMensal").value = seguro.precoMensal;
+      document.getElementById("protecoes").value = seguro.protecoes.join(", ");
+      document.getElementById("tituloFormulario").textContent = "Editar seguro";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function carregarSeguros() {
+      const busca = buscaInput.value.trim();
+      const url = busca ? "/seguros?q=" + encodeURIComponent(busca) : "/seguros";
+
+      try {
+        const seguros = await buscarJSON(url);
+
+        if (!seguros.length) {
+          listaSeguros.innerHTML = "<p>Nenhum seguro encontrado.</p>";
+          return;
+        }
+
+        listaSeguros.innerHTML = seguros
+          .map((seguro) => {
+            const protecoes = seguro.protecoes
+              .map((protecao) => `<span class="tag">${escaparHTML(protecao)}</span>`)
+              .join("");
+
+            return `
+              <article class="item">
+                <div class="item-cabecalho">
+                  <strong>${escaparHTML(seguro.seguradora)}</strong>
+                  <span class="tag">${formatarDinheiro(seguro.precoMensal)} / mes</span>
+                </div>
+                <div class="item-meta">
+                  <span>${protecoes}</span>
+                  <small>ID: ${seguro.id}</small>
+                </div>
+                <div class="item-acoes">
+                  <button class="botao-editar" data-acao="editar" data-id="${seguro.id}" type="button">Editar</button>
+                  <button class="botao-deletar" data-acao="deletar" data-id="${seguro.id}" type="button">Deletar</button>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+      } catch (erro) {
+        listaSeguros.innerHTML = `<p class="erro">${escaparHTML(erro.message)}</p>`;
+      }
+    }
+
+    formSeguro.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+
+      const id = document.getElementById("seguroId").value;
+      const editando = Boolean(id);
+      const url = editando ? `/seguros/${id}` : "/seguros";
+      const method = editando ? "PUT" : "POST";
+
+      try {
+        await buscarJSON(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dadosDoFormulario())
+        });
+
+        mostrarMensagem("mensagem", editando ? "Seguro editado com sucesso!" : "Seguro cadastrado com sucesso!", "sucesso");
+        limparFormulario();
+        carregarSeguros();
+      } catch (erro) {
+        mostrarMensagem("mensagem", erro.message, "erro");
+      }
+    });
+
+    listaSeguros.addEventListener("click", async (evento) => {
+      const botao = evento.target.closest("button[data-acao]");
+
+      if (!botao) return;
+
+      const id = Number(botao.dataset.id);
+
+      if (botao.dataset.acao === "editar") {
+        const seguro = await buscarJSON(`/seguros/${id}`);
+        preencherFormulario(seguro);
+        return;
+      }
+
+      if (!confirm("Deseja realmente deletar este seguro?")) return;
+
+      try {
+        const resposta = await fetch(`/seguros/${id}`, { method: "DELETE" });
+
+        if (!resposta.ok) {
+          const dados = await resposta.json();
+          throw new Error(dados.erro);
+        }
+
+        mostrarMensagem("mensagem", "Seguro deletado com sucesso!", "sucesso");
+        carregarSeguros();
+      } catch (erro) {
+        mostrarMensagem("mensagem", erro.message, "erro");
+      }
+    });
+
+    document.getElementById("cancelarEdicao").addEventListener("click", limparFormulario);
+    document.getElementById("buscarBtn").addEventListener("click", carregarSeguros);
+    buscaInput.addEventListener("keydown", (evento) => {
+      if (evento.key === "Enter") carregarSeguros();
+    });
+
+    carregarSeguros();
+  </script>
+</body>
+</html>

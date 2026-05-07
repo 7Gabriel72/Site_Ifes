@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testes da API</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Testes da API</h1>
+    <p>Teste rápido das rotas principais</p>
+  </header>
+
+
+  <!-- Menu de navegação entre as páginas do sistema. -->
+  <nav class="menu">
+    <a href="index.html">Início</a>
+    <a href="alunos.html">Alunos</a>
+    <a href="cursos.html">Cursos</a>
+    <a href="turmas.html">Turmas</a>
+    <a href="matriculas.html">Matrículas</a>
+    <a href="testes-api.html">Testes da API</a>
+  </nav>
+
+
+  <main class="container">
+    <section class="card">
+      <h2>Botões de teste</h2>
+      <button onclick="testar('/saude')">GET /saude</button>
+      <button onclick="testar('/alunos')">GET /alunos</button>
+      <button onclick="testar('/cursos')">GET /cursos</button>
+      <button onclick="testar('/turmas')">GET /turmas</button>
+      <button onclick="testar('/matriculas-turma')">GET /matriculas-turma</button>
+      <button onclick="testar('/alunos/1/turmas')">GET /alunos/1/turmas</button>
+    </section>
+
+    <section class="card">
+      <h2>Resultado</h2>
+      <pre id="saida">Clique em um botão para testar.</pre>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Projeto didático - Secretaria Escolar</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+
+  <script>
+    // Cria uma função para testar uma rota da API.
+    async function testar(url) {
+      // Seleciona a área de saída.
+      const saida = document.getElementById("saida");
+
+      try {
+        // Busca os dados da rota informada.
+        const dados = await buscarJSON(url);
+
+        // Mostra os dados formatados.
+        saida.textContent = JSON.stringify(dados, null, 2);
+      } catch (erro) {
+        // Mostra a mensagem de erro.
+        saida.textContent = erro.message;
+      }
+    }
+  </script>
+</body>
+</html>

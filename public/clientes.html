@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clientes</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Clientes</h1>
+    <p>Cadastrar, buscar, editar e deletar compradores</p>
+  </header>
+
+  <nav class="menu">
+    <a href="index.html">Inicio</a>
+    <a href="carros.html">Carros</a>
+    <a class="ativo" href="clientes.html">Clientes</a>
+    <a href="seguros.html">Seguros</a>
+    <a href="vendas.html">Vendas</a>
+    <a href="testes-api.html">Testes da API</a>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <h2 id="tituloFormulario">Cadastrar cliente</h2>
+
+      <form id="formCliente" class="formulario">
+        <input id="clienteId" type="hidden">
+
+        <div class="form-grid">
+          <div class="campo">
+            <label for="nome">Nome</label>
+            <input id="nome" required minlength="3" placeholder="Nome do cliente">
+          </div>
+
+          <div class="campo">
+            <label for="cpf">CPF</label>
+            <input id="cpf" required placeholder="000.000.000-00">
+          </div>
+
+          <div class="campo">
+            <label for="email">Email</label>
+            <input id="email" type="email" required placeholder="cliente@email.com">
+          </div>
+
+          <div class="campo">
+            <label for="profissao">Profissao</label>
+            <input id="profissao" required placeholder="Profissao">
+          </div>
+        </div>
+
+        <div class="item-acoes">
+          <button type="submit">Salvar cliente</button>
+          <button id="cancelarEdicao" class="botao-secundario" type="button">Cancelar edicao</button>
+        </div>
+      </form>
+
+      <p id="mensagem" class="mensagem"></p>
+    </section>
+
+    <section class="card">
+      <h2>Buscar cliente</h2>
+      <div class="formulario-dupla">
+        <input id="busca" placeholder="Digite nome, CPF, email ou profissao">
+        <button id="buscarBtn" type="button">Buscar</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Lista de clientes</h2>
+      <div id="listaClientes" class="resultado"></div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Projeto didatico - AutoPrime Veiculos</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    const formCliente = document.getElementById("formCliente");
+    const listaClientes = document.getElementById("listaClientes");
+    const buscaInput = document.getElementById("busca");
+
+    function dadosDoFormulario() {
+      return {
+        nome: document.getElementById("nome").value,
+        cpf: document.getElementById("cpf").value,
+        email: document.getElementById("email").value,
+        profissao: document.getElementById("profissao").value
+      };
+    }
+
+    function limparFormulario() {
+      formCliente.reset();
+      document.getElementById("clienteId").value = "";
+      document.getElementById("tituloFormulario").textContent = "Cadastrar cliente";
+    }
+
+    function preencherFormulario(cliente) {
+      document.getElementById("clienteId").value = cliente.id;
+      document.getElementById("nome").value = cliente.nome;
+      document.getElementById("cpf").value = cliente.cpf;
+      document.getElementById("email").value = cliente.email;
+      document.getElementById("profissao").value = cliente.profissao;
+      document.getElementById("tituloFormulario").textContent = "Editar cliente";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function carregarClientes() {
+      const busca = buscaInput.value.trim();
+      const url = busca ? "/clientes?q=" + encodeURIComponent(busca) : "/clientes";
+
+      try {
+        const clientes = await buscarJSON(url);
+
+        if (!clientes.length) {
+          listaClientes.innerHTML = "<p>Nenhum cliente encontrado.</p>";
+          return;
+        }
+
+        listaClientes.innerHTML = clientes
+          .map((cliente) => `
+            <article class="item">
+              <div class="item-cabecalho">
+                <strong>${escaparHTML(cliente.nome)}</strong>
+                <span class="tag">${escaparHTML(cliente.profissao)}</span>
+              </div>
+              <div class="item-meta">
+                <span>CPF: ${escaparHTML(cliente.cpf)}</span>
+                <span>Email: ${escaparHTML(cliente.email)}</span>
+                <small>ID: ${cliente.id}</small>
+              </div>
+              <div class="item-acoes">
+                <button class="botao-editar" data-acao="editar" data-id="${cliente.id}" type="button">Editar</button>
+                <button class="botao-deletar" data-acao="deletar" data-id="${cliente.id}" type="button">Deletar</button>
+              </div>
+            </article>
+          `)
+          .join("");
+      } catch (erro) {
+        listaClientes.innerHTML = `<p class="erro">${escaparHTML(erro.message)}</p>`;
+      }
+    }
+
+    formCliente.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+
+      const id = document.getElementById("clienteId").value;
+      const editando = Boolean(id);
+      const url = editando ? `/clientes/${id}` : "/clientes";
+      const method = editando ? "PUT" : "POST";
+
+      try {
+        await buscarJSON(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dadosDoFormulario())
+        });
+
+        mostrarMensagem("mensagem", editando ? "Cliente editado com sucesso!" : "Cliente cadastrado com sucesso!", "sucesso");
+        limparFormulario();
+        carregarClientes();
+      } catch (erro) {
+        mostrarMensagem("mensagem", erro.message, "erro");
+      }
+    });
+
+    listaClientes.addEventListener("click", async (evento) => {
+      const botao = evento.target.closest("button[data-acao]");
+
+      if (!botao) return;
+
+      const id = Number(botao.dataset.id);
+
+      if (botao.dataset.acao === "editar") {
+        const cliente = await buscarJSON(`/clientes/${id}`);
+        preencherFormulario(cliente);
+        return;
+      }
+
+      if (!confirm("Deseja realmente deletar este cliente?")) return;
+
+      try {
+        const resposta = await fetch(`/clientes/${id}`, { method: "DELETE" });
+
+        if (!resposta.ok) {
+          const dados = await resposta.json();
+          throw new Error(dados.erro);
+        }
+
+        mostrarMensagem("mensagem", "Cliente deletado com sucesso!", "sucesso");
+        carregarClientes();
+      } catch (erro) {
+        mostrarMensagem("mensagem", erro.message, "erro");
+      }
+    });
+
+    document.getElementById("cancelarEdicao").addEventListener("click", limparFormulario);
+    document.getElementById("buscarBtn").addEventListener("click", carregarClientes);
+    buscaInput.addEventListener("keydown", (evento) => {
+      if (evento.key === "Enter") carregarClientes();
+    });
+
+    carregarClientes();
+  </script>
+</body>
+</html>

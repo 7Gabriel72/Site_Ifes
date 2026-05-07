@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alunos</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Alunos</h1>
+    <p>Cadastrar, buscar, editar e deletar alunos</p>
+  </header>
+
+
+  <!-- Menu de navegação entre as páginas do sistema. -->
+  <nav class="menu">
+    <a href="index.html">Início</a>
+    <a href="alunos.html">Alunos</a>
+    <a href="cursos.html">Cursos</a>
+    <a href="turmas.html">Turmas</a>
+    <a href="matriculas.html">Matrículas</a>
+    <a href="testes-api.html">Testes da API</a>
+  </nav>
+
+
+  <main class="container">
+    <section class="card">
+      <h2 id="tituloFormulario">Cadastrar aluno</h2>
+
+      <form id="formAluno" class="formulario">
+        <input id="alunoId" type="hidden">
+
+        <label for="nome">Nome</label>
+        <input id="nome" placeholder="Nome com pelo menos 3 caracteres" required minlength="3">
+
+        <label for="email">E-mail</label>
+        <input id="email" type="email" placeholder="email@exemplo.com" required>
+
+        <button type="submit">Salvar aluno</button>
+        <button type="button" onclick="limparFormulario()">Cancelar edição</button>
+      </form>
+
+      <p id="mensagem" class="mensagem"></p>
+    </section>
+
+    <section class="card">
+      <h2>Buscar aluno</h2>
+      <div class="formulario-dupla">
+        <input id="busca" placeholder="Digite nome ou e-mail">
+        <button onclick="carregarAlunos()">Buscar</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Lista de alunos</h2>
+      <div id="listaAlunos" class="resultado"></div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Projeto didático - Secretaria Escolar</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+
+  <script>
+    // Seleciona o formulário de alunos.
+    const formAluno = document.getElementById("formAluno");
+
+    // Cria o evento de envio do formulário.
+    formAluno.addEventListener("submit", async (evento) => {
+      // Impede que a página recarregue.
+      evento.preventDefault();
+
+      // Captura o id oculto, usado quando está editando.
+      const id = document.getElementById("alunoId").value;
+
+      // Captura o nome digitado.
+      const nome = document.getElementById("nome").value;
+
+      // Captura o e-mail digitado.
+      const email = document.getElementById("email").value;
+
+      // Verifica se existe id; se existe, é edição.
+      const editando = Boolean(id);
+
+      // Define a URL da API conforme cadastro ou edição.
+      const url = editando ? `/alunos/${id}` : "/alunos";
+
+      // Define o método HTTP conforme cadastro ou edição.
+      const method = editando ? "PUT" : "POST";
+
+      try {
+        // Envia os dados para a API.
+        await buscarJSON(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ nome, email })
+        });
+
+        // Mostra mensagem de sucesso.
+        mostrarMensagem("mensagem", editando ? "Aluno editado com sucesso!" : "Aluno cadastrado com sucesso!", "sucesso");
+
+        // Limpa o formulário.
+        limparFormulario();
+
+        // Atualiza a lista de alunos.
+        carregarAlunos();
+      } catch (erro) {
+        // Mostra mensagem de erro.
+        mostrarMensagem("mensagem", erro.message, "erro");
+      }
+    });
+
+    // Preenche o formulário com dados do aluno escolhido.
+    function editarAluno(id, nome, email) {
+      document.getElementById("alunoId").value = id;
+      document.getElementById("nome").value = nome;
+      document.getElementById("email").value = email;
+      document.getElementById("tituloFormulario").textContent = "Editar aluno";
+    }
+
+    // Limpa o formulário e volta para modo cadastro.
+    function limparFormulario() {
+      formAluno.reset();
+      document.getElementById("alunoId").value = "";
+      document.getElementById("tituloFormulario").textContent = "Cadastrar aluno";
+    }
+
+    // Deleta um aluno pelo id.
+    async function deletarAluno(id) {
+      const confirmar = confirm("Deseja realmente deletar este aluno?");
+
+      if (!confirmar) return;
+
+      try {
+        const resposta = await fetch(`/alunos/${id}`, { method: "DELETE" });
+
+        if (!resposta.ok) {
+          const dados = await resposta.json();
+          throw new Error(dados.erro);
+        }
+
+        mostrarMensagem("mensagem", "Aluno deletado com sucesso!", "sucesso");
+        carregarAlunos();
+      } catch (erro) {
+        mostrarMensagem("mensagem", erro.message, "erro");
+      }
+    }
+
+    // Busca alunos na API e mostra na tela.
+    async function carregarAlunos() {
+      const busca = document.getElementById("busca").value;
+      const url = busca ? "/alunos?q=" + encodeURIComponent(busca) : "/alunos";
+      const lista = document.getElementById("listaAlunos");
+
+      try {
+        const alunos = await buscarJSON(url);
+        lista.innerHTML = "";
+
+        if (!alunos.length) {
+          lista.innerHTML = "<p>Nenhum aluno encontrado.</p>";
+          return;
+        }
+
+        alunos.forEach((aluno) => {
+          const item = document.createElement("div");
+          item.className = "item";
+          item.innerHTML = `
+            <strong>${aluno.nome}</strong><br>
+            <span>${aluno.email}</span><br>
+            <small>ID: ${aluno.id}</small>
+            <div class="item-acoes">
+              <button class="botao-editar" onclick="editarAluno(${aluno.id}, '${aluno.nome}', '${aluno.email}')">Editar</button>
+              <button class="botao-deletar" onclick="deletarAluno(${aluno.id})">Deletar</button>
+            </div>
+          `;
+          lista.appendChild(item);
+        });
+      } catch (erro) {
+        lista.innerHTML = `<p class="erro">${erro.message}</p>`;
+      }
+    }
+
+    // Carrega os alunos quando a página abre.
+    carregarAlunos();
+  </script>
+</body>
+</html>

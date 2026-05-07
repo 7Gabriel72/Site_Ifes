@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testes da API</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Testes da API</h1>
+    <p>Consultas rapidas dos endpoints da AutoPrime</p>
+  </header>
+
+  <nav class="menu">
+    <a href="index.html">Inicio</a>
+    <a href="carros.html">Carros</a>
+    <a href="clientes.html">Clientes</a>
+    <a href="seguros.html">Seguros</a>
+    <a href="vendas.html">Vendas</a>
+    <a class="ativo" href="testes-api.html">Testes da API</a>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <h2>Endpoints</h2>
+      <div class="item-acoes">
+        <button data-url="/saude">/saude</button>
+        <button data-url="/api">/api</button>
+        <button data-url="/carros">/carros</button>
+        <button data-url="/clientes">/clientes</button>
+        <button data-url="/seguros">/seguros</button>
+        <button data-url="/vendas">/vendas</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Resposta</h2>
+      <pre id="saida">Clique em um endpoint para testar.</pre>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Projeto didatico - AutoPrime Veiculos</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    document.querySelector(".item-acoes").addEventListener("click", async (evento) => {
+      const botao = evento.target.closest("button[data-url]");
+
+      if (!botao) return;
+
+      try {
+        const dados = await buscarJSON(botao.dataset.url);
+        mostrarPre("saida", dados);
+      } catch (erro) {
+        mostrarPre("saida", { erro: erro.message });
+      }
+    });
+  </script>
+</body>
+</html>

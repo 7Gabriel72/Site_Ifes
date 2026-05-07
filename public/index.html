@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoPrime Veiculos</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>AutoPrime Veiculos</h1>
+    <p>Gestao de carros, clientes, seguros e vendas</p>
+  </header>
+
+  <nav class="menu">
+    <a class="ativo" href="index.html">Inicio</a>
+    <a href="carros.html">Carros</a>
+    <a href="clientes.html">Clientes</a>
+    <a href="seguros.html">Seguros</a>
+    <a href="vendas.html">Vendas</a>
+    <a href="testes-api.html">Testes da API</a>
+  </nav>
+
+  <main class="container">
+    <section class="card destaque">
+      <h2>Painel da concessionaria</h2>
+      <p>Use os modulos abaixo para cadastrar veiculos, controlar clientes, comparar seguros e registrar vendas.</p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <span id="totalCarros" class="kpi">...</span>
+        <h3>Carros</h3>
+        <p>Catalogo e pagamentos dos veiculos.</p>
+        <a class="botao" href="carros.html">Acessar</a>
+      </article>
+
+      <article class="card">
+        <span id="totalClientes" class="kpi">...</span>
+        <h3>Clientes</h3>
+        <p>Cadastro de compradores e contatos.</p>
+        <a class="botao" href="clientes.html">Acessar</a>
+      </article>
+
+      <article class="card">
+        <span id="totalSeguros" class="kpi">...</span>
+        <h3>Seguros</h3>
+        <p>Planos, coberturas e preco mensal.</p>
+        <a class="botao" href="seguros.html">Acessar</a>
+      </article>
+
+      <article class="card">
+        <span id="totalVendas" class="kpi">...</span>
+        <h3>Vendas</h3>
+        <p>Vinculo entre cliente, carro e seguro.</p>
+        <a class="botao" href="vendas.html">Acessar</a>
+      </article>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Projeto didatico - AutoPrime Veiculos</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    async function carregarResumo() {
+      try {
+        const [carros, clientes, seguros, vendas] = await Promise.all([
+          buscarJSON("/carros"),
+          buscarJSON("/clientes"),
+          buscarJSON("/seguros"),
+          buscarJSON("/vendas")
+        ]);
+
+        document.getElementById("totalCarros").textContent = carros.length;
+        document.getElementById("totalClientes").textContent = clientes.length;
+        document.getElementById("totalSeguros").textContent = seguros.length;
+        document.getElementById("totalVendas").textContent = vendas.length;
+      } catch (erro) {
+        document.querySelectorAll(".kpi").forEach((item) => {
+          item.textContent = "!";
+        });
+      }
+    }
+
+    carregarResumo();
+  </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Cursos</title><link rel="stylesheet" href="css/style.css"></head>
+<body>
+<header class="topo"><h1>Cursos</h1><p>Cadastrar, buscar, editar e deletar cursos</p></header>
+
+  <!-- Menu de navegação entre as páginas do sistema. -->
+  <nav class="menu">
+    <a href="index.html">Início</a>
+    <a href="alunos.html">Alunos</a>
+    <a href="cursos.html">Cursos</a>
+    <a href="turmas.html">Turmas</a>
+    <a href="matriculas.html">Matrículas</a>
+    <a href="testes-api.html">Testes da API</a>
+  </nav>
+
+<main class="container">
+<section class="card"><h2 id="tituloFormulario">Cadastrar curso</h2><form id="formCurso" class="formulario"><input id="cursoId" type="hidden"><label>Título</label><input id="titulo" required><label>Código</label><input id="codigo" required><button type="submit">Salvar curso</button><button type="button" onclick="limparFormulario()">Cancelar edição</button></form><p id="mensagem" class="mensagem"></p></section>
+<section class="card"><h2>Buscar curso</h2><div class="formulario-dupla"><input id="busca" placeholder="Digite título ou código"><button onclick="carregarCursos()">Buscar</button></div></section>
+<section class="card"><h2>Lista de cursos</h2><div id="listaCursos" class="resultado"></div></section>
+</main>
+<footer class="rodape"><p>Projeto didático - Secretaria Escolar</p></footer>
+<script src="js/api.js"></script>
+<script>
+// Seleciona o formulário de cursos.
+const formCurso = document.getElementById("formCurso");
+
+// Cria o evento de envio do formulário.
+formCurso.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+  const id = document.getElementById("cursoId").value;
+  const titulo = document.getElementById("titulo").value;
+  const codigo = document.getElementById("codigo").value;
+  const editando = Boolean(id);
+  const url = editando ? `/cursos/${id}` : "/cursos";
+  const method = editando ? "PUT" : "POST";
+  try {
+    await buscarJSON(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ titulo, codigo }) });
+    mostrarMensagem("mensagem", editando ? "Curso editado com sucesso!" : "Curso cadastrado com sucesso!", "sucesso");
+    limparFormulario();
+    carregarCursos();
+  } catch (erro) {
+    mostrarMensagem("mensagem", erro.message, "erro");
+  }
+});
+
+// Preenche o formulário para edição.
+function editarCurso(id, titulo, codigo) {
+  document.getElementById("cursoId").value = id;
+  document.getElementById("titulo").value = titulo;
+  document.getElementById("codigo").value = codigo;
+  document.getElementById("tituloFormulario").textContent = "Editar curso";
+}
+
+// Limpa o formulário.
+function limparFormulario() {
+  formCurso.reset();
+  document.getElementById("cursoId").value = "";
+  document.getElementById("tituloFormulario").textContent = "Cadastrar curso";
+}
+
+// Deleta um curso.
+async function deletarCurso(id) {
+  if (!confirm("Deseja realmente deletar este curso?")) return;
+  try {
+    const resposta = await fetch(`/cursos/${id}`, { method: "DELETE" });
+    if (!resposta.ok) {
+      const dados = await resposta.json();
+      throw new Error(dados.erro);
+    }
+    mostrarMensagem("mensagem", "Curso deletado com sucesso!", "sucesso");
+    carregarCursos();
+  } catch (erro) {
+    mostrarMensagem("mensagem", erro.message, "erro");
+  }
+}
+
+// Carrega cursos na tela.
+async function carregarCursos() {
+  const busca = document.getElementById("busca").value;
+  const url = busca ? "/cursos?q=" + encodeURIComponent(busca) : "/cursos";
+  const lista = document.getElementById("listaCursos");
+  try {
+    const cursos = await buscarJSON(url);
+    lista.innerHTML = "";
+    if (!cursos.length) {
+      lista.innerHTML = "<p>Nenhum curso encontrado.</p>";
+      return;
+    }
+    cursos.forEach((curso) => {
+      const item = document.createElement("div");
+      item.className = "item";
+      item.innerHTML = `<strong>${curso.titulo}</strong><br><span>Código: ${curso.codigo}</span><br><small>ID: ${curso.id}</small><div class="item-acoes"><button class="botao-editar" onclick="editarCurso(${curso.id}, '${curso.titulo}', '${curso.codigo}')">Editar</button><button class="botao-deletar" onclick="deletarCurso(${curso.id})">Deletar</button></div>`;
+      lista.appendChild(item);
+    });
+  } catch (erro) {
+    lista.innerHTML = `<p class="erro">${erro.message}</p>`;
+  }
+}
+
+// Carrega cursos quando a página abre.
+carregarCursos();
+</script>
+</body>
+</html>
